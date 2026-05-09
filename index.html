@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RPL Pridee Memories</title>
+    <style>
+        /* --- KODE CSS (TAMPILAN) --- */
+        :root {
+            --pink-bg: #ffe0e9;
+            --pink-light: #ffb3c6;
+            --pink-bright: #ff6090;
+            --pink-glow: #ff85a2;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--pink-bg);
+            font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* TAMBAHAN CSS LOADING SCREEN */
+        #loading-screen {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-color: #ffe0e9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 1s ease;
+        }
+        .loading-content { text-align: center; }
+        .loading-cat { width: 180px; margin-bottom: 20px; }
+        .loading-text { 
+            color: #ff6090; 
+            font-weight: bold; 
+            font-size: 1.2rem; 
+            margin-bottom: 15px; 
+        }
+        .progress-bar {
+            width: 200px; height: 8px;
+            background: #fff; border-radius: 10px;
+            margin: 0 auto; overflow: hidden;
+            border: 2px solid #ffb3c6;
+        }
+        .progress-fill {
+            width: 0%; height: 100%;
+            background: #ff6090;
+            animation: fillProgress 3s forwards;
+        }
+        @keyframes fillProgress { to { width: 100%; } }
+
+        /* KANVAS & KONTEN UTAMA */
+        #matrix-canvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 1;
+            opacity: 0.7;
+        }
+
+        #main-content {
+            position: relative;
+            z-index: 10;
+            width: 90%;
+            max-width: 600px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 20px;
+        }
+
+        .typing-box {
+            background-color: rgba(45, 45, 45, 0.85);
+            color: var(--pink-light);
+            padding: 20px;
+            border-radius: 15px;
+            font-family: 'Courier New', monospace;
+            text-align: left;
+            border-left: 5px solid var(--pink-bright);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            width: 100%;
+        }
+
+        .universe {
+            position: relative;
+            width: 300px; height: 300px;
+            border-radius: 50%;
+            overflow: hidden;
+            background-color: rgba(26, 26, 26, 0.9);
+            border: 8px solid white;
+            box-shadow: 0 0 30px var(--pink-glow);
+        }
+
+        .center-logo {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 70px; height: 70px;
+            z-index: 15;
+            background: white;
+            border-radius: 50%;
+            padding: 5px;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
+        }
+
+        .orbit-wrap {
+            position: absolute;
+            width: 100%; height: 100%;
+            animation: rotateOrbit 20s linear infinite;
+        }
+
+        .foto-imut {
+            position: absolute;
+            width: 60px; height: 60px;
+            border-radius: 50%;
+            border: 3px solid var(--pink-bright);
+            object-fit: cover;
+            background: white;
+            animation: counterRotate 20s linear infinite;
+        }
+
+        .f1 { top: 10%; left: 40%; }
+        .f2 { top: 40%; right: 5%; }
+        .f3 { bottom: 10%; left: 40%; }
+        .f4 { top: 40%; left: 5%; }
+
+        button.btn-suara {
+            background-color: var(--pink-bright);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 50px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(255, 96, 144, 0.4);
+            transition: transform 0.2s;
+        }
+        button.btn-suara:hover { transform: scale(1.1); }
+
+        .farewell-text {
+            color: var(--pink-bright);
+            font-size: 1.2rem;
+            font-weight: bold;
+            text-shadow: 0 2px 4px rgba(255, 133, 162, 0.3);
+        }
+
+        .floating-memory {
+            position: fixed;
+            width: 120px; height: 120px;
+            object-fit: cover;
+            border-radius: 15px;
+            border: 3px solid var(--pink-glow);
+            z-index: 2;
+            opacity: 0;
+            pointer-events: none;
+            animation: fadeInOut 8s ease-in-out forwards;
+            filter: grayscale(30%) brightness(0.8);
+        }
+
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: scale(0.5) rotate(-5deg); }
+            20% { opacity: 0.5; transform: scale(1) rotate(0deg); }
+            80% { opacity: 0.5; transform: scale(1) rotate(0deg); }
+            100% { opacity: 0; transform: scale(1.2) rotate(5deg); }
+        }
+
+        @keyframes rotateOrbit { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes counterRotate { from { transform: rotate(360deg); } to { transform: rotate(0deg); } }
+    </style>
+</head>
+<body>
+
+    <div id="loading-screen">
+        <div class="loading-content">
+            <img src="https://media0.giphy.com/media/uJ4OWihM4Vbjjr9Wvz/giphy.gif" alt="Kucing Imut" class="loading-cat">
+            <div class="loading-text">Sabar ya nyaww, lagi otw... ✨</div>
+            <div class="progress-bar"><div class="progress-fill"></div></div>
+        </div>
+    </div>
+
+    <canvas id="matrix-canvas"></canvas>
+
+    <div id="main-content">
+        <div class="typing-box" id="code-text"></div>
+
+        <button class="btn-suara" onclick="playMusic()">Dengarkan Pesan Terakhir ✨🎧</button>
+        
+        <div class="universe">
+            <div class="center-logo">
+                <img src="assets/logoj.png" style="width: 100%;">
+            </div>
+            
+            <div class="orbit-wrap">
+                <img src="assets/foto_1.png" class="foto-imut f1" alt="Foto 1">
+                <img src="assets/foto_2.png" class="foto-imut f2" alt="Foto 2">
+                <img src="assets/foto_3.png" class="foto-imut f3" alt="Foto 3">
+                <img src="assets/foto_4.png" class="foto-imut f4" alt="Foto 4">
+            </div>
+        </div>
+
+        <div class="farewell-text">
+            By Bilaa nyaww - Memories 2026<br>
+            <i>"Berpisah itu pasti, mengenang itu pilihan."</i>
+        </div>
+
+        <audio id="perpisahanAudio">
+            <source src="assets/suararpl.mpeg" type="audio/mpeg">
+        </audio>
+    </div>
+
+<script>
+// 1. LOGIKA HUJAN KODE PINK
+const canvas = document.getElementById('matrix-canvas');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+const custom = '❤️✨🌸MEMORIES2026PERPISAHANSMKN3TELUKKUANTAN';
+const characters = custom.split('');
+const fontSize = 16;
+const columns = canvas.width / fontSize;
+const rainDrops = Array.from({ length: columns }, () => 1);
+
+function drawMatrix() {
+    ctx.fillStyle = 'rgba(26, 26, 26, 0.1)'; 
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#ff85a2'; 
+    ctx.font = fontSize + 'px monospace';
+    rainDrops.forEach((y, x) => {
+        const text = characters[Math.floor(Math.random() * characters.length)];
+        ctx.fillText(text, x * fontSize, y * fontSize);
+        if (y * fontSize > canvas.height && Math.random() > 0.975) {
+            rainDrops[x] = 0;
+        }
+        rainDrops[x]++;
+    });
+}
+setInterval(drawMatrix, 50);
+
+// 2. LOGIKA FLOATING MEMORIES
+const fotoBackground = [
+    'assets/foto1.jpeg', 'assets/foto2.jpeg', 'assets/foto3.jpeg',
+    'assets/foto4.jpeg', 'assets/foto5.jpeg', 'assets/foto6.jpeg', 
+    'assets/foto7.jpeg', 'assets/foto8.jpeg', 'assets/foto9.jpeg', 
+    'assets/foto10.jpeg', 'assets/foto11.jpeg', 'assets/foto12.jpeg'
+];
+
+function spawnFloatingPhoto() {
+    const img = document.createElement('img');
+    const randomFoto = fotoBackground[Math.floor(Math.random() * fotoBackground.length)];
+    img.src = randomFoto;
+    img.className = 'floating-memory';
+    const posX = Math.random() * (window.innerWidth - 150);
+    const posY = Math.random() * (window.innerHeight - 150);
+    img.style.left = posX + 'px';
+    img.style.top = posY + 'px';
+    document.body.appendChild(img);
+    setTimeout(() => { img.remove(); }, 8000);
+}
+setInterval(spawnFloatingPhoto, 3000);
+
+// 3. LOGIKA MENGETIK
+const codeText = "System.init('Kenangan_Kita');\necho 'Terima kasih SMKN 3 Teluk Kuantan...';\necho 'Terima kasih RPL kuu...';\necho 'Kita akan merindukan momen ini.';\necho 'Sukses selalu teman-teman!';";
+let index = 0;
+function typeWriter() {
+    if (index < codeText.length) {
+        const char = codeText.charAt(index);
+        document.getElementById('code-text').innerHTML += char === "\n" ? "<br>" : char;
+        index++;
+        setTimeout(typeWriter, 50);
+    }
+}
+
+// 4. LOGIKA PENGHILANG LOADING SCREEN (TAMBAHAN)
+window.addEventListener('load', function() {
+    setTimeout(() => {
+        const loading = document.getElementById('loading-screen');
+        loading.style.opacity = '0';
+        setTimeout(() => { 
+            loading.style.display = 'none'; 
+            typeWriter(); // Mulai ngetik setelah loading selesai
+        }, 1000);
+    }, 3500); 
+});
+
+function playMusic() {
+    document.getElementById("perpisahanAudio").play();
+    alert("Pesan suara diputar... ✨🎧");
+}
+</script>
+    
+</body>
+</html>
